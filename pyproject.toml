@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "thesis-reading-skill"
+version = "0.1.0"
+description = "Command-driven academic paper search, screening, PDF deep reading, evidence capture, report generation, and audit workflow for coding agents."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "requests>=2.31.0",
+  "Jinja2>=3.1.0",
+  "PyMuPDF>=1.23.0",
+  "beautifulsoup4>=4.12.0",
+  "lxml>=5.0.0",
+]
+keywords = ["academic", "papers", "literature-review", "agent", "pdf", "research"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Scientific/Engineering :: Information Analysis",
+  "Topic :: Text Processing :: Markup :: HTML",
+]
+
+[project.scripts]
+thesis-reading = "scripts.cli:main"
+thesis-search = "scripts.search:main"
+thesis-screen = "scripts.screen_papers:main"
+thesis-library = "scripts.build_library:main"
+thesis-fetch = "scripts.fetch_fulltext:main"
+thesis-parse = "scripts.parse_pdf:main"
+thesis-read = "scripts.read_paper:main"
+thesis-analyze = "scripts.analyze_paper:main"
+thesis-capture = "scripts.capture_figures:main"
+thesis-report = "scripts.build_report:main"
+thesis-export-pdf = "scripts.export_pdf:main"
+thesis-audit = "scripts.audit_report:main"
+thesis-deep-read = "scripts.deep_read_selected:main"
+thesis-deep-request = "scripts.deep_read_request:main"
+thesis-cite = "scripts.cite:main"
+
+[tool.setuptools]
+packages = ["scripts", "scripts.lib", "scripts.sources", "templates", "references"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+templates = ["*.j2"]
+references = ["*.md"]
+scripts = ["**/*.py"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "build>=0.10"]

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+  <style>
+    :root {
+      --nav: #243b53;
+      --bg: #f7f7f4;
+      --panel: #ffffff;
+      --line: #d9e2ec;
+      --ink: #1f2933;
+      --muted: #52606d;
+      --thesis: #fef08a;
+      --concept: #fecaca;
+      --evidence: #bfdbfe;
+      --concession: #bbf7d0;
+      --methodology: #e9d5ff;
+      --context: #e5e7eb;
+    }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .navbar { position: sticky; top: 0; z-index: 10; background: var(--nav); color: white; padding: 18px 28px; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+    .navbar h1 { margin: 0 0 6px; font-size: 22px; }
+    .navbar p { margin: 0; color: #d9e2ec; }
+    .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .chip { color: #1f2933; border-radius: 4px; padding: 4px 8px; font-size: 12px; }
+    main { max-width: 1420px; margin: 0 auto; padding: 24px; }
+    .quality-bar { background: #edf2f7; border: 1px solid var(--line); border-radius: 6px; padding: 12px; margin-bottom: 22px; display: flex; flex-wrap: wrap; gap: 14px; color: var(--muted); }
+    .paragraph-group { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(320px, .9fr); gap: 18px; margin-bottom: 18px; align-items: start; }
+    .translation-card, .annotation-card, .source-text { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 16px; }
+    .translation-card { line-height: 1.78; }
+    .translation-card h2 { margin: 0 0 10px; font-size: 18px; }
+    .source-text { line-height: 1.72; margin-top: 12px; color: var(--muted); }
+    .source-text summary { cursor: pointer; color: var(--nav); font-weight: 700; }
+    .annotation-card { border-left: 5px solid var(--context); }
+    .annotation-card.thesis { border-left-color: #ca8a04; }
+    .annotation-card.concept { border-left-color: #dc2626; }
+    .annotation-card.evidence { border-left-color: #2563eb; }
+    .annotation-card.concession { border-left-color: #16a34a; }
+    .annotation-card.methodology { border-left-color: #9333ea; }
+    .annotation-card h2 { margin: 0 0 10px; font-size: 16px; }
+    .annotation-card p { margin: 8px 0; }
+    .bilingual-notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+    .note-box { background: #f8fafc; border: 1px solid var(--line); border-radius: 4px; padding: 10px; }
+    .note-box h3 { margin: 0 0 8px; font-size: 13px; color: var(--muted); }
+    .note-box p { margin: 6px 0; }
+    .page { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+    mark { padding: 1px 3px; border-radius: 3px; }
+    mark.thesis { background: var(--thesis); }
+    mark.concept { background: var(--concept); }
+    mark.evidence { background: var(--evidence); }
+    mark.concession { background: var(--concession); }
+    mark.methodology { background: var(--methodology); }
+    .questions { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 4px; padding: 8px; }
+    .bottom { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 16px; margin-top: 28px; }
+    .copy-block { white-space: pre-wrap; background: #f8fafc; border: 1px solid var(--line); padding: 10px; border-radius: 4px; }
+    @media (max-width: 850px) { .paragraph-group, .bilingual-notes { grid-template-columns: 1fr; } main { padding: 14px; } }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <h1>{{ title }}</h1>
+    <p>{{ source_pdf }} · {{ page_count }} pages · {{ generated_at }}</p>
+    <div class="legend">
+      <span class="chip" style="background: var(--thesis)">核心论点</span>
+      <span class="chip" style="background: var(--concept)">概念定义</span>
+      <span class="chip" style="background: var(--evidence)">证据/结果</span>
+      <span class="chip" style="background: var(--concession)">限制/反驳</span>
+      <span class="chip" style="background: var(--methodology)">方法设计</span>
+    </div>
+  </header>
+  <main>
+    <section class="quality-bar">
+      <span><strong>Reading mode:</strong> {{ mode }}</span>
+      <span><strong>Paragraphs:</strong> {{ annotations | length }}</span>
+      <span><strong>Status:</strong> heuristic annotation, requires Agent/human review</span>
+    </section>
+
+    {% for item in annotations %}
+    <article class="paragraph-group">
+      <div class="translation-card">
+        <div class="page">Page {{ item.page }} · Paragraph {{ item.paragraph_index }}</div>
+        <h2>中文译读</h2>
+        <p>{{ item.translation_zh }}</p>
+        <details class="source-text">
+          <summary>查看原文证据</summary>
+          <div>{{ item.highlighted_html | safe }}</div>
+        </details>
+      </div>
+      <aside class="annotation-card {{ item.role }}">
+        <h2>{{ item.role_label_zh or item.role_label }}</h2>
+        <section class="note-box">
+          <h3>中文结构分析</h3>
+          <p><strong>段落功能:</strong> {{ item.paragraph_function_zh or item.paragraph_function }}</p>
+          <p><strong>论证角色:</strong> {{ item.logical_role_zh or item.logical_role }}</p>
+          <p><strong>检查点:</strong> {{ item.risk_note_zh or item.risk_note }}</p>
+        </section>
+        {% if item.matched_questions %}
+        <div class="questions"><strong>匹配阅读问题:</strong><br>{{ item.matched_questions | join('<br>') | safe }}</div>
+        {% endif %}
+      </aside>
+    </article>
+    {% endfor %}
+
+    <section class="bottom">
+      <h2>Argument Structure Worksheet</h2>
+      <p>这一区域供 Agent 在精读后补全：问题、论点、证据、反驳处理、结论、最强论证、最弱论证。</p>
+      <h3>APA</h3>
+      <div class="copy-block">{{ apa }}</div>
+      <h3>BibTeX</h3>
+      <div class="copy-block">{{ bibtex }}</div>
+    </section>
+  </main>
+</body>
+</html>

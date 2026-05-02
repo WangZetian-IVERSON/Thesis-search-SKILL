@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+build/
+dist/
+*.egg-info/
+
+# Local research materials
+papers/*.pdf
+papers/*.html
+outputs/
+evidence/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Local Claude Code settings
+.claude/settings.local.json
