@@ -7,6 +7,8 @@
 [![PyPI Package](https://img.shields.io/badge/install-pip-orange)](#安装)
 
 ---
+<img width="2511" height="1325" alt="image" src="https://github.com/user-attachments/assets/15e5ffd4-5776-4173-89d9-b19094e2b208" />
+
 
 ## 目录
 
