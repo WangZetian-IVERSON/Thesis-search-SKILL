@@ -182,6 +182,18 @@ def update_deep_read_record(
                     "analysis_json": summary.get("analysis_json"),
                     "updated_at": now_local(),
                 }
+                # Refresh zh_takeaway from deep-reading analysis if available
+                analysis_path = summary.get("analysis_json")
+                if analysis_path:
+                    analysis = read_json(Path(analysis_path), {})
+                    sections = analysis.get("sections", {})
+                    parts = []
+                    for key in ("research_problem", "core_claim"):
+                        zh = (sections.get(key) or {}).get("deep_summary_zh", "")
+                        if zh and len(zh) > 10:
+                            parts.append(zh)
+                    if parts:
+                        paper["zh_takeaway"] = " ".join(parts)
                 save_library(library, library_path)
                 render_dashboard(library_path, dashboard_path)
                 return

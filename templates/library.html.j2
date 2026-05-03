@@ -49,6 +49,13 @@
     .prompt { grid-column: 1 / -1; text-align: left; color: var(--muted); word-break: break-word; }
     .hidden { display: none !important; }
     .empty { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 28px; text-align: center; color: var(--muted); }
+    .pagination { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 28px; flex-wrap: wrap; }
+    .pagination button { min-width: 38px; height: 38px; border-radius: 6px; padding: 0 12px; font-weight: 700; }
+    .pagination button.active { background: var(--accent); border-color: #085f5a; color: #fff; }
+    .pagination button:disabled { opacity: .35; cursor: default; }
+    .pagination .page-info { color: var(--muted); font-size: 13px; white-space: nowrap; }
+    .page-size-wrap { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; }
+    .page-size-wrap select { padding: 6px 8px; font-size: 13px; }
     @media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 720px) { main { padding: 16px; } .grid, .filters { grid-template-columns: 1fr; } header p { margin-left: 0; } }
   </style>
@@ -121,6 +128,17 @@
     {% endfor %}
   </section>
   <section class="empty hidden" id="emptyState">没有匹配的论文记录。</section>
+
+  <div class="pagination" id="pagination"></div>
+  <div class="page-size-wrap" style="justify-content:center; margin-top:12px;">
+    每页显示
+    <select id="pageSize">
+      <option value="12" selected>12 篇</option>
+      <option value="24">24 篇</option>
+      <option value="48">48 篇</option>
+      <option value="0">全部</option>
+    </select>
+  </div>
 </main>
 <script>
   const favoritesKey = 'thesis-reading-library-favorites';
@@ -128,6 +146,11 @@
   const cards = Array.from(document.querySelectorAll('.paper-card'));
   const resultCount = document.getElementById('resultCount');
   const emptyState = document.getElementById('emptyState');
+  const paginationEl = document.getElementById('pagination');
+  const pageSizeEl = document.getElementById('pageSize');
+
+  let filteredCards = [];
+  let currentPage = 1;
 
   function saveFavorites() {
     localStorage.setItem(favoritesKey, JSON.stringify(Array.from(favoriteSet)));
@@ -141,25 +164,95 @@
     });
   }
 
+  function getPageSize() {
+    return parseInt(pageSizeEl.value, 10);
+  }
+
+  function renderPage() {
+    const pageSize = getPageSize();
+    const total = filteredCards.length;
+    const totalPages = pageSize === 0 ? 1 : Math.max(1, Math.ceil(total / pageSize));
+    currentPage = Math.min(currentPage, totalPages);
+
+    cards.forEach(c => c.classList.add('hidden'));
+    if (pageSize === 0) {
+      filteredCards.forEach(c => c.classList.remove('hidden'));
+    } else {
+      const start = (currentPage - 1) * pageSize;
+      filteredCards.slice(start, start + pageSize).forEach(c => c.classList.remove('hidden'));
+    }
+
+    resultCount.textContent = `当前显示 ${total} 篇（第 ${currentPage} / ${totalPages} 页）`;
+    emptyState.classList.toggle('hidden', total !== 0);
+    renderPagination(totalPages);
+  }
+
+  function renderPagination(totalPages) {
+    paginationEl.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    const prev = document.createElement('button');
+    prev.textContent = '‹ 上一页';
+    prev.disabled = currentPage === 1;
+    prev.addEventListener('click', () => { currentPage--; renderPage(); window.scrollTo(0, 0); });
+    paginationEl.appendChild(prev);
+
+    // show at most 7 page buttons with ellipsis
+    const range = buildPageRange(currentPage, totalPages);
+    range.forEach(p => {
+      if (p === '…') {
+        const span = document.createElement('span');
+        span.className = 'page-info';
+        span.textContent = '…';
+        paginationEl.appendChild(span);
+      } else {
+        const btn = document.createElement('button');
+        btn.textContent = p;
+        if (p === currentPage) btn.classList.add('active');
+        btn.addEventListener('click', () => { currentPage = p; renderPage(); window.scrollTo(0, 0); });
+        paginationEl.appendChild(btn);
+      }
+    });
+
+    const next = document.createElement('button');
+    next.textContent = '下一页 ›';
+    next.disabled = currentPage === totalPages;
+    next.addEventListener('click', () => { currentPage++; renderPage(); window.scrollTo(0, 0); });
+    paginationEl.appendChild(next);
+
+    const info = document.createElement('span');
+    info.className = 'page-info';
+    info.textContent = `共 ${filteredCards.length} 篇`;
+    paginationEl.appendChild(info);
+  }
+
+  function buildPageRange(cur, total) {
+    if (total <= 7) return Array.from({length: total}, (_, i) => i + 1);
+    const pages = [];
+    pages.push(1);
+    if (cur > 3) pages.push('…');
+    for (let p = Math.max(2, cur - 1); p <= Math.min(total - 1, cur + 1); p++) pages.push(p);
+    if (cur < total - 2) pages.push('…');
+    pages.push(total);
+    return pages;
+  }
+
   function applyFilters() {
     const start = document.getElementById('startDate').value;
     const end = document.getElementById('endDate').value;
     const keyword = document.getElementById('keyword').value.trim().toLowerCase();
     const status = document.getElementById('statusFilter').value;
-    let visible = 0;
-    cards.forEach(card => {
+    filteredCards = cards.filter(card => {
       const date = card.dataset.date;
       const deep = card.dataset.deep === '1';
       const record = card.dataset.record;
       const matchesDate = (!start || date >= start) && (!end || date <= end);
       const matchesKeyword = !keyword || card.dataset.search.includes(keyword);
       const matchesStatus = status === 'all' || (status === 'deep' && deep) || (status === 'pending' && !deep) || (status === 'favorite' && favoriteSet.has(record));
-      const show = matchesDate && matchesKeyword && matchesStatus;
-      card.classList.toggle('hidden', !show);
-      if (show) visible += 1;
+      return matchesDate && matchesKeyword && matchesStatus;
     });
-    resultCount.textContent = `当前显示 ${visible} 篇`;
-    emptyState.classList.toggle('hidden', visible !== 0);
+    currentPage = 1;
+    renderPage();
   }
 
   document.getElementById('applyBtn').addEventListener('click', applyFilters);
@@ -172,6 +265,7 @@
   });
   document.getElementById('keyword').addEventListener('input', applyFilters);
   document.getElementById('statusFilter').addEventListener('change', applyFilters);
+  pageSizeEl.addEventListener('change', () => { currentPage = 1; renderPage(); });
   document.querySelectorAll('[data-fav]').forEach(button => {
     button.addEventListener('click', () => {
       const id = button.dataset.fav;

@@ -55,7 +55,7 @@ def build_reading_page(input_path: Path, output_dir: Path, questions_raw: str | 
     data = load_input(input_path)
     questions = parse_questions(questions_raw)
     page_texts = [(page.get("page"), page.get("text") or "") for page in data.get("pages", [])]
-    annotations = annotate_paragraphs(page_texts, questions=questions, lang=lang, max_paragraphs=max_paragraphs)
+    annotations = annotate_paragraphs(page_texts, questions=questions, lang=lang, max_paragraphs=max_paragraphs, title=data.get("title") or "")
 
     paper = PaperMetadata(
         paper_id=data.get("paper_id") or slugify(data.get("title") or input_path.stem),

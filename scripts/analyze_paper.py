@@ -7,6 +7,7 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
+from lib.llm import enrich_analysis_zh
 from lib.synthesis import build_paper_analysis, load_figures
 from lib.utils import ensure_dir, read_json, slugify, write_json, write_text
 
@@ -57,6 +58,7 @@ def analyze(reading_manifest_path: Path, manifest_paths: list[Path], output_dir:
     if not reading:
         raise SystemExit(f"Reading manifest is empty or unreadable: {reading_manifest_path}")
     analysis = build_paper_analysis(reading, topic=topic, figure_records=load_figures(manifest_paths))
+    enrich_analysis_zh(analysis, title=analysis.get("title", ""), topic=topic)
     paper_id = analysis.get("paper_id") or slugify(analysis.get("title") or reading_manifest_path.stem)
     ensure_dir(output_dir)
     json_path = output_dir / f"{paper_id}.analysis.json"

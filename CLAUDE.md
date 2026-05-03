@@ -19,12 +19,23 @@ Read [SKILL.md](SKILL.md) first and follow its procedure. The executable entry p
 ## Common Commands
 
 ```bash
+# Search + screen (Intent A)
 python scripts/search.py "LLM agents literature review" --top 20
 python scripts/screen_papers.py outputs/evidence/find-xxx.json --top 20
+python scripts/build_library.py --screening outputs/screening/screen-xxx.json
+
+# Deep read one paper by rank (Intent B, single)
+LATEST=$(ls -t outputs/screening/screen-*.json | head -1)
+python scripts/deep_read_selected.py "$LATEST" "帮我精读第1篇" --topic "LLM agents literature review"
+
+# Deep read multiple papers (Intent B, multi)
+for R in 1 2 3; do
+  python scripts/deep_read_selected.py "$LATEST" "帮我精读第${R}篇" --topic "LLM agents literature review"
+done
+python scripts/build_library.py --screening "$LATEST"
+
+# Deep read by date request
 python scripts/deep_read_request.py "给我5.2号抓取的第一个论文的精读" --topic "LLM agents literature review"
-python scripts/deep_read_selected.py outputs/screening/screen-topic.json "帮我精读第3篇" --topic "LLM agents literature review"
-python scripts/build_library.py
-python scripts/audit_report.py --metadata outputs/evidence/find-xxx.json --reading outputs/readings/example.reading_manifest.json --analysis outputs/analyses/example.analysis.json --manifest outputs/evidence/example.figures_manifest.json --report outputs/reports/example.report.html
 ```
 
 ## Outputs

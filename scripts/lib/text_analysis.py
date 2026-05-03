@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import html
 import re
+import sys
 from dataclasses import dataclass, asdict
 from typing import Any
+
+from lib.llm import summarize_paragraph_zh
 
 ROLE_KEYWORDS = {
     "methodology": ["method", "approach", "framework", "model", "dataset", "experiment", "procedure", "we propose", "we train"],
@@ -167,7 +170,22 @@ def make_translation_draft(paragraph: str, role: str) -> str:
     )
 
 
-def annotate_paragraphs(page_texts: list[tuple[int, str]], *, questions: list[str] | None = None, lang: str = "zh", max_paragraphs: int = 80) -> list[ParagraphAnnotation]:
+def _llm_or_heuristic(paragraph: str, role: str, title: str, page: int) -> str:
+    """Try LLM summary first; fall back to heuristic."""
+    llm_summary = summarize_paragraph_zh(paragraph, title=title, page=page)
+    if llm_summary:
+        return llm_summary
+    return make_translation_draft(paragraph, role)
+
+
+def annotate_paragraphs(
+    page_texts: list[tuple[int, str]],
+    *,
+    questions: list[str] | None = None,
+    lang: str = "zh",
+    max_paragraphs: int = 80,
+    title: str = "",
+) -> list[ParagraphAnnotation]:
     questions = questions or []
     labels = ROLE_LABEL_ZH if lang.lower().startswith("zh") else ROLE_LABEL_EN
     annotations: list[ParagraphAnnotation] = []
@@ -187,7 +205,7 @@ def annotate_paragraphs(page_texts: list[tuple[int, str]], *, questions: list[st
                     role_label_zh=ROLE_LABEL_ZH[role],
                     role_label_en=ROLE_LABEL_EN[role],
                     highlighted_html=highlight(paragraph, role),
-                    translation_zh=make_translation_draft(paragraph, role),
+                    translation_zh=_llm_or_heuristic(paragraph, role, title=title, page=page_number),
                     paragraph_function=paragraph_function,
                     paragraph_function_zh=zh_notes[0],
                     paragraph_function_en=en_notes[0],
