@@ -18,7 +18,7 @@
 
 <br>
 
-### 💬 在 WeChat / OpenClaw 中的完整使用流程
+### 💬 在 WeChat link OpenClaw 中的完整使用流程
 
 只需用自然语言告诉 Agent 想做什么，Skill 自动完成从检索到精读报告的全流程，无需手动运行任何命令。
 
