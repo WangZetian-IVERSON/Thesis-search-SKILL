@@ -7,9 +7,29 @@
 [![PyPI Package](https://img.shields.io/badge/install-pip-orange)](#安装)
 
 ---
-<img width="2511" height="1325" alt="image" src="https://github.com/user-attachments/assets/15e5ffd4-5776-4173-89d9-b19094e2b208" />
-<img width="1754" height="866" alt="image" src="https://github.com/user-attachments/assets/28ec9aa9-d2b2-4780-8282-e392b102ed93" />
 
+## 效果预览
+
+### 📚 论文阅读工作台
+
+统一汇聚所有检索批次；支持按抓取日期、关键词、精读状态筛选；翻页浏览；点击卡片直达深读报告或分块译读页。
+
+<img width="100%" alt="论文阅读工作台截图" src="https://github.com/user-attachments/assets/15e5ffd4-5776-4173-89d9-b19094e2b208" />
+
+<br>
+
+### 💬 在 WeChat / OpenClaw 中的完整使用流程
+
+只需用自然语言告诉 Agent 想做什么，Skill 自动完成从检索到精读报告的全流程，无需手动运行任何命令。
+
+<img width="100%" alt="WeChat OpenClaw 使用流程四步" src="https://github.com/user-attachments/assets/28ec9aa9-d2b2-4780-8282-e392b102ed93" />
+
+| &nbsp; | 步骤 | 说明 |
+|:---:|------|------|
+| **1** | 检索 + 初筛 | 告知研究话题，Agent 自动检索并初筛候选论文，返回工作台公网链接与论文列表 |
+| **2** | 指定精读 | 说"精读第 N 篇"，Agent 自动下载 PDF、分块译读、生成中文结构化分析 |
+| **3** | 工作台浏览 | 工作台实时更新精读状态，可按日期 / 关键词 / 已读状态过滤全库 |
+| **4** | 深读报告 | 打开报告，查看研究问题、核心论点、方法、关键证据、局限五大维度的中文解读 |
 
 
 ## 目录
